@@ -20,7 +20,7 @@ const theForm = document.getElementById("theForm");
 theForm.addEventListener("submit", (e) => {
   e.preventDefault();
   const city = document.getElementById("city").value;
-  const something = getWeather(city);
+  getWeather(city);
 });
 
 // let state = "";
