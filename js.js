@@ -21,53 +21,79 @@ theForm.addEventListener("submit", (e) => {
   e.preventDefault();
   const city = document.getElementById("city").value;
   const something = getWeather(city);
-  const checkbox = document.getElementById("tempF").checked;
-
-  // if (checkbox) switch state to farenheit?
-  console.log(something);
 });
 
-async function getWeather(city) {
-  const response = await fetch(
-    `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=22fb22ffdfc6a32c6547a639c2388d0b`
-  );
-  const data = await response.json();
-  paintDisplay(data);
+// let state = "";
 
-  return {
-    data,
-  };
+function setState() {
+  let state = "";
+  const checkbox = document.getElementById("tempF").checked;
+  checkbox ? (state = "imperial") : (state = "metric");
+  return state;
 }
 
-function paintDisplay(data) {
+function changeDeg(units) {
+  if (units === "imperial") {
+    return "F";
+  } else if (units === "metric") {
+    return "C";
+  }
+}
+
+async function getWeather(city) {
+  const units = setState();
+  const deg = changeDeg(units);
+  const response = await fetch(
+    `https://api.openweathermap.org/data/2.5/weather?q=${city}&units=${units}&appid=22fb22ffdfc6a32c6547a639c2388d0b`
+  );
+  const data = await response.json();
+  const a = data.name;
+  const b = data.sys.country;
+  const c = data.main.temp;
+  const d = deg;
+  const e = units;
+  paintDisplay(a, b, c, d, e);
+}
+
+function paintDisplay(city, country, temp, deg, units) {
   const headerData = document.getElementById("headerData");
   const headerText = document.getElementById("headerText");
-  const cityName = data.name;
-  console.log(cityName);
-  const country = data.sys.country;
-  const temp = data.main.temp;
-  const tempC = convertKelvinToCF(temp, "c");
-  const tempF = convertKelvinToCF(temp, "f");
+  const headerTextNode = setHeaderText(temp, units);
 
-  // insert text to headerData
-  // ${tempC} in ${city},${country}?!
   headerData.innerHTML = "";
   const textNode1 = document.createTextNode(
-    `${tempC}c in ${cityName}, ${country}!?`
+    `${temp}${deg} in ${city}, ${country}!?`
   );
   headerData.appendChild(textNode1);
 
   headerText.innerHTML = "";
-  const textNode2 = document.createTextNode(`IT'S FUCKING HOT/COLD/ALRIGHT`);
+  const textNode2 = document.createTextNode(headerTextNode);
   headerText.appendChild(textNode2);
 }
 
-function convertKelvinToCF(kelvinTemp, measurement) {
-  if (measurement === "c" || measurement === "C") {
-    return (kelvinTemp - 273.15).toFixed(2);
-  } else if (measurement === "f" || measurement === "F") {
-    return ((9 / 5) * (kelvinTemp - 273) + 32).toFixed(2);
+// too lazy to use switch statement
+function setHeaderText(temp, units) {
+  if (units === "imperial") {
+    if (temp < 32) {
+      return `IT'S FUCKING FREEZING`;
+    } else if (temp < 50) {
+      return `IT'S FUCKING COLD`;
+    } else if (temp < 65) {
+      return `IT'S FUCKING... ALRIGHT`;
+    } else if (temp < 80) {
+      return `IT'S FUCKING NICE`;
+    } else return `IT'S FUCKING HOT'`;
+  } else if (units === "metric") {
+    if (temp < 0) {
+      return `IT'S FUCKING FREEZING`;
+    } else if (temp < 10) {
+      return `IT'S FUCKING COLD`;
+    } else if (temp < 18.5) {
+      return `IT'S FUCKING... ALRIGHT`;
+    } else if (temp < 26) {
+      return `IT'S FUCKING NICE`;
+    } else return `IT'S FUCKING HOT'`;
   } else {
-    return console.log("error with temperature conversion");
+    console.log("error setting header text");
   }
 }
